@@ -1,0 +1,8 @@
+flask
+torch
+torchvision
+pillow
+chartjs
+chartjs-plugin-datalabels
+timm
+matplotlib
