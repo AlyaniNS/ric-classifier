@@ -1,0 +1,22 @@
+# Ignore virtual environments
+venv/
+.env/
+.envrc
+*.pyc
+__pycache__/
+
+# Ignore large files and compiled libraries
+*.dylib
+*.so
+*.dll
+*.exe
+*.bin
+*.log
+
+# Ignore Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+venv/
