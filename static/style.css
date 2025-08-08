@@ -1,8 +1,12 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f8f9fa;
 }
-#preview {
-    border: 2px solid #ddd;
-    padding: 5px;
-    border-radius: 5px;
+
+.card {
+    border-radius: 12px;
+}
+
+.bg-gradient {
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
 }

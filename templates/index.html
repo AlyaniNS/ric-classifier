@@ -1,29 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Resin Code Classifier</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Klasifikasi Kode Resin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    html { scroll-behavior: smooth; }
+    #result { scroll-margin-top: 100px; }
+    .progress {
+      background-color: #e9ecef;
+    }
+    .progress-bar {
+      transition: width 0.6s ease;
+      white-space: nowrap;
+      padding: 0 8px;
+      font-weight: 500;
+    }
+  </style>
 </head>
 <body class="bg-light">
 <div class="container py-5">
-    <h1 class="text-center mb-4">Resin Code Classifier (Few-Shot Learning)</h1>
-    <div class="card p-4 shadow-sm">
-        <form method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="file" class="form-label">Upload an image:</label>
-                <input type="file" class="form-control" name="file" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Predict</button>
-        </form>
-    </div>
 
-    {% if prediction %}
-        <div class="mt-4">
-            <h3>Predicted Class: {{ prediction }}</h3>
-            <img src="data:image/png;base64,{{ chart }}" class="img-fluid mt-3"/>
+  <!-- Success Notification -->
+  {% if report_success %}
+  <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+    <strong>Terima kasih!</strong> Laporan Anda telah berhasil dikirim.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+
+  <!-- Title -->
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <h2 class="fw-bold">Klasifikasi Kode Resin Pada Kemasan Plastik</h2>
+      <p class="text-muted">Few-Shot Learning dengan EfficientNet-B2</p>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="row mb-4">
+    <div class="col-md-6 offset-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          {% if error %}
+            <div class="alert alert-danger text-center">{{ error }}</div>
+          {% endif %}
+          <form method="POST" enctype="multipart/form-data">
+            <label class="form-label">Upload gambar kode plastik:</label>
+            <input type="file" name="file" class="form-control mb-3" required>
+            <button class="btn btn-primary w-100"><i class="bi bi-upload"></i> Prediksi</button>
+          </form>
         </div>
-    {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Prediction Section -->
+  {% if prediction %}
+  <div id="result" class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h4 class="mb-4 text-center text-success">Hasil prediksi: <strong>{{ prediction }}</strong></h4>
+          <div class="row">
+            <!-- Uploaded Image -->
+            <div class="col-md-6 text-center mb-3 mb-md-0">
+              <p class="fw-bold">Gambar yang diupload:</p>
+              <img src="{{ url_for('static', filename=image_url) }}" 
+     class="img-fluid rounded border"
+     style="max-width: 300px; max-height: 300px; object-fit: contain;">
+
+            </div>
+
+            <!-- Probability Bar Chart (HTML version) -->
+            <div class="col-md-6 text-start">
+              <!-- <p class="fw-bold text-center">Visualisasi Probabilitas:</p> -->
+               <br>
+              {% for label, value in probs.items() %}
+              <div class="mb-2 d-flex align-items-center">
+                <div style="width: 40px;">{{ loop.index }}</div>
+                <div class="flex-grow-1 me-2">
+                  <div class="progress" style="height: 24px;">
+                    <div class="progress-bar {% if loop.index == 1 %}bg-warning text-dark{% endif %}" 
+                         role="progressbar"
+                         style="width: {{ '%.2f'|format(value) }}%">
+                      {% if value >= 5 %}{{ label }} ({{ '%.1f'|format(value) }}%) {% endif %}
+                    </div>
+                  </div>
+                </div>
+                {% if value < 5 %}
+                  <span class="small">{{ label }} ({{ '%.1f'|format(value) }}%)</span>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Report Button -->
+          <div class="text-center mt-4">
+            <form method="POST" action="/report">
+              <input type="hidden" name="prediction" value="{{ prediction }}">
+              <input type="hidden" name="image_url" value="{{ image_url }}">
+              <button type="submit" class="btn btn-outline-danger">
+                <i class="bi bi-flag-fill"></i> Hasil prediksi tidak sesuai? Lapor disini
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edukasi Plastik -->
+  <div id="education" class="row mt-4">
+    <div class="col-md-10 offset-md-1">
+      <div class="card border-start border-4 border-info shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title text-info">Tentang Plastik Ini</h5>
+          <p class="card-text">
+            {{ plastic_info or "Informasi edukatif belum tersedia untuk jenis plastik ini." }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
 </div>
+
+<script>
+  {% if prediction %}
+    window.onload = function () {
+      document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+    };
+  {% endif %}
+</script>
 </body>
 </html>
