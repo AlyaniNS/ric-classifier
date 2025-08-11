@@ -33,11 +33,15 @@ plastic_education = {
 
 # --- Load backbone model ---
 backbone = timm.create_model("efficientnet_b2", pretrained=False, num_classes=0)
-backbone.load_state_dict(torch.load("fsl_efficientnet_b2_backbone_v3.pth", map_location=device))
+# backbone.load_state_dict(torch.load("fsl_efficientnet_b2_backbone_v3.pth", map_location=device))
+# backbone.load_state_dict(torch.load("/Users/alyani-dmg/skripsi/proto_effb2_5shot_backbone.pth", map_location=device)) #test with 5-shot
+backbone.load_state_dict(torch.load("/Users/alyani-dmg/skripsi/proto_effb2_10shot_backbone.pth", map_location=device)) #test with 10-shot
 backbone.eval()
 
 # --- Load class prototypes ---
-proto_data = torch.load("class_prototypes_finetuned_v3.pt", map_location=device)
+# proto_data = torch.load("class_prototypes_finetuned_v3.pt", map_location=device)
+# proto_data = torch.load("/Users/alyani-dmg/skripsi/proto_effb2_5shot_prototypes.pt", map_location=device)  # 5-shot
+proto_data = torch.load("/Users/alyani-dmg/skripsi/proto_effb2_10shot_prototypes.pt", map_location=device)  # 10-shot
 prototypes = proto_data["prototypes"].to(device)
 class_names = proto_data["class_names"]
 
