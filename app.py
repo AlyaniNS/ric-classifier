@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import timm
-from flask import Flask, render_template, request, send_file, redirect, url_for
+from flask import Flask, render_template, request, send_file, redirect, url_for, session
 from PIL import Image
 from torchvision import transforms
 
@@ -16,19 +16,71 @@ import matplotlib.pyplot as plt
 
 # --- Flask setup ---
 app = Flask(__name__, template_folder="templates", static_folder="static")
+app.secret_key = 'your-secret-key-here'  # Change this in production
 
 # --- Device ---
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# --- Localization ---
+LANGUAGES = {
+    'id': {
+        'title': 'Klasifikasi Kode Resin Pada Kemasan Plastik',
+        'subtitle': 'Few-Shot Learning dengan EfficientNet-B2',
+        'upload_label': 'Upload gambar kode plastik:',
+        'predict_btn': 'Prediksi',
+        'result_title': 'Hasil prediksi:',
+        'uploaded_image': 'Gambar yang diupload:',
+        'about_plastic': 'Tentang Plastik Ini',
+        'report_btn': 'Hasil prediksi tidak sesuai? Lapor disini',
+        'report_success': 'Terima kasih! Laporan Anda telah berhasil dikirim.',
+        'no_file_error': 'Tidak ada file yang diunggah.',
+        'not_ric_error': 'Bukan Kode Identifikasi Resin, tidak dapat diklasifikasi (confidence: {:.1f}%)',
+        'not_ric_suggestion': 'Silakan upload gambar yang mengandung kode resin (angka 1-7 dalam segitiga)',
+        'processing_error': 'Error memproses gambar: {}. Silakan coba lagi dengan gambar RIC yang jelas.',
+        'try_another': 'Coba Gambar Lain',
+        'not_ric_title': 'Bukan Kode Resin!',
+        'no_info_available': 'Informasi edukatif belum tersedia untuk jenis plastik ini.'
+    },
+    'en': {
+        'title': 'Resin Identification Code Classification on Plastic Packaging',
+        'subtitle': 'Few-Shot Learning with EfficientNet-B2',
+        'upload_label': 'Upload plastic code image:',
+        'predict_btn': 'Predict',
+        'result_title': 'Prediction result:',
+        'uploaded_image': 'Uploaded image:',
+        'about_plastic': 'About This Plastic',
+        'report_btn': 'Prediction result incorrect? Report here',
+        'report_success': 'Thank you! Your report has been successfully submitted.',
+        'no_file_error': 'No file uploaded.',
+        'not_ric_error': 'Not a Resin Identification Code, cannot be classified (confidence: {:.1f}%)',
+        'not_ric_suggestion': 'Please upload an image containing resin code (numbers 1-7 in triangle)',
+        'processing_error': 'Error processing image: {}. Please try again with a clear RIC image.',
+        'try_another': 'Try Another Image',
+        'not_ric_title': 'Not a Resin Code!',
+        'no_info_available': 'Educational information not yet available for this plastic type.'
+    }
+}
+
 # --- Plastic education dictionary ---
 plastic_education = {
-    "1_PET": "PET digunakan untuk botol air dan minuman ringan. Mudah didaur ulang.",
-    "2_HDPE": "HDPE biasanya digunakan untuk botol susu, galon, dan produk rumah tangga.",
-    "3_PVC": "PVC digunakan untuk pipa dan kemasan. Sulit didaur ulang.",
-    "4_LDPE": "LDPE dipakai pada kantong belanja dan plastik pembungkus.",
-    "5_PP": "PP sering ditemukan di wadah makanan dan tutup botol.",
-    "6_PS": "PS (styrofoam) digunakan untuk wadah makanan sekali pakai.",
-    "7_OTHER": "Kategori lainnya termasuk plastik campuran dan bioplastik."
+    'id': {
+        "1_PET": "PET digunakan untuk botol air dan minuman ringan. Mudah didaur ulang.",
+        "2_HDPE": "HDPE biasanya digunakan untuk botol susu, galon, dan produk rumah tangga.",
+        "3_PVC": "PVC digunakan untuk pipa dan kemasan. Sulit didaur ulang.",
+        "4_LDPE": "LDPE dipakai pada kantong belanja dan plastik pembungkus.",
+        "5_PP": "PP sering ditemukan di wadah makanan dan tutup botol.",
+        "6_PS": "PS (styrofoam) digunakan untuk wadah makanan sekali pakai.",
+        "7_OTHER": "Kategori lainnya termasuk plastik campuran dan bioplastik."
+    },
+    'en': {
+        "1_PET": "PET is used for water bottles and soft drinks. Easily recyclable.",
+        "2_HDPE": "HDPE is commonly used for milk bottles, gallons, and household products.",
+        "3_PVC": "PVC is used for pipes and packaging. Difficult to recycle.",
+        "4_LDPE": "LDPE is used for shopping bags and plastic wrapping.",
+        "5_PP": "PP is often found in food containers and bottle caps.",
+        "6_PS": "PS (styrofoam) is used for disposable food containers.",
+        "7_OTHER": "Other category includes mixed plastics and bioplastics."
+    }
 }
 
 # --- Load backbone model ---
@@ -51,8 +103,19 @@ transform = transforms.Compose([
 # --- Chart image in memory ---
 chart_image = None
 
+# --- Language helper function ---
+def get_language():
+    return session.get('language', 'id')  # Default to Indonesian
+
+def get_text(key, *args):
+    lang = get_language()
+    text = LANGUAGES[lang].get(key, LANGUAGES['id'][key])
+    if args:
+        return text.format(*args)
+    return text
+
 # --- Prediction logic ---
-def predict(image_path, temperature=0.1):
+def predict(image_path, temperature=0.1, min_confidence=95.0):
     global chart_image
 
     img = Image.open(image_path).convert("RGB")
@@ -69,6 +132,14 @@ def predict(image_path, temperature=0.1):
     class_sorted = [class_names[i] for i in sorted_indices]
 
     pred_class = class_sorted[0]
+    confidence = sims_sorted[0]
+    second_confidence = sims_sorted[1] if len(sims_sorted) > 1 else 0
+    
+    # Check if confidence is too low (not a valid RIC)
+    # Also check if the difference between top 2 predictions is too small (indicates uncertainty)
+    confidence_gap = confidence - second_confidence
+    if confidence < min_confidence or confidence_gap < 20.0:
+        return None, None, confidence
 
     # Plotting chart
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -96,7 +167,14 @@ def predict(image_path, temperature=0.1):
     img_io.seek(0)
     chart_image = img_io
 
-    return pred_class, {cls: float(prob) for cls, prob in zip(class_sorted, sims_sorted)}
+    return pred_class, {cls: float(prob) for cls, prob in zip(class_sorted, sims_sorted)}, confidence
+
+# --- Language switching route ---
+@app.route("/<language>")
+def set_language(language):
+    if language in LANGUAGES:
+        session['language'] = language
+    return redirect(url_for('index'))
 
 # --- Index route ---
 @app.route("/", methods=["GET", "POST"])
@@ -107,23 +185,41 @@ def index():
     image_url = None
     report_success = request.args.get("reported") == "true"
     plastic_info = None
+    confidence = None
+    is_not_ric = False
 
     if request.method == "POST":
         file = request.files.get("file")
         if not file or file.filename == "":
-            error = "Tidak ada file yang diunggah."
+            error = get_text('no_file_error')
         else:
-            upload_dir = os.path.join("static", "uploads")
-            os.makedirs(upload_dir, exist_ok=True)
-            file_path = os.path.join(upload_dir, file.filename)
-            file.save(file_path)
-            image_url = f"uploads/{file.filename}"
+            try:
+                upload_dir = os.path.join("static", "uploads")
+                os.makedirs(upload_dir, exist_ok=True)
+                file_path = os.path.join(upload_dir, file.filename)
+                file.save(file_path)
+                image_url = f"uploads/{file.filename}"
 
-            prediction, probs = predict(file_path)
-            plastic_info = plastic_education.get(prediction)
+                prediction, probs, confidence = predict(file_path)
+                
+                if prediction is None:
+                    # Not a valid RIC - low confidence
+                    is_not_ric = True
+                    error = get_text('not_ric_error', confidence)
+                else:
+                    lang = get_language()
+                    plastic_info = plastic_education[lang].get(prediction)
+                    
+            except Exception as e:
+                error = get_text('processing_error', str(e))
 
+    # Get current language and texts
+    current_lang = get_language()
+    texts = LANGUAGES[current_lang]
+    
     return render_template("index.html", prediction=prediction, probs=probs, error=error,
-                           image_url=image_url, report_success=report_success, plastic_info=plastic_info)
+                           image_url=image_url, report_success=report_success, plastic_info=plastic_info,
+                           confidence=confidence, is_not_ric=is_not_ric, texts=texts, current_lang=current_lang)
 
 # --- Serve chart image ---
 @app.route("/chart.png")
