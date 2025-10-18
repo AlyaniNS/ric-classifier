@@ -1,0 +1,20 @@
+<!-- Upload Component -->
+<div class="row mb-4">
+  <div class="col-md-6 offset-md-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        {% if error and not is_not_ric %}
+          <div class="alert alert-danger text-center">
+            {{ error }}
+          </div>
+        {% endif %}
+        <form method="POST" enctype="multipart/form-data">
+          <label class="form-label">{{ texts.upload_label }}</label>
+          <input type="file" name="file" class="form-control mb-3" accept="image/*" required>
+          
+          <button class="btn btn-primary w-100"><i class="bi bi-upload"></i> {{ texts.predict_btn }}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

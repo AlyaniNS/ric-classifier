@@ -1,0 +1,42 @@
+<!-- Header Component -->
+<div class="row mb-3">
+  <div class="col-12 text-end">
+    <div class="language-dropdown">
+      <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        {% if current_lang == 'id' %}
+          <span class="fi fi-id me-2"></span>Bahasa Indonesia
+        {% else %}
+          <span class="fi fi-us me-2"></span>English
+        {% endif %}
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item {% if current_lang == 'id' %}active{% endif %}" href="{{ url_for('set_language', language='id') }}">
+            <span class="fi fi-id me-2"></span>Bahasa Indonesia
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item {% if current_lang == 'en' %}active{% endif %}" href="{{ url_for('set_language', language='en') }}">
+            <span class="fi fi-us me-2"></span>English
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Success Notification -->
+{% if report_success %}
+<div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+  <strong>{{ texts.report_success.split('!')[0] }}!</strong> {{ texts.report_success.split('! ')[1] }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+<!-- Title / Hero -->
+<div class="row mb-4">
+  <div class="col-12 text-center">
+    <h2 class="fw-bold hero-title">{{ texts.title }}</h2>
+    <p class="text-muted hero-subtitle">{{ texts.subtitle }}</p>
+  </div>
+</div>
