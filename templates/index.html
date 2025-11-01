@@ -53,17 +53,45 @@
 {% endif %}
 
 <script>
-  // File input preview
-  const fileInput = document.querySelector('input[type="file"]');
-  if (fileInput) {
+  // File input preview and upload area enhancement
+  const fileInput = document.querySelector('#fileInput');
+  const uploadArea = document.querySelector('.upload-area');
+  const uploadLabel = document.querySelector('.upload-label p');
+  
+  if (fileInput && uploadArea) {
     fileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          // Add preview functionality if needed
-        };
-        reader.readAsDataURL(file);
+        uploadLabel.textContent = file.name;
+        uploadArea.style.borderColor = 'var(--primary)';
+        uploadArea.style.background = '#f0fdf4';
+      }
+    });
+    
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'var(--primary)';
+      uploadArea.style.background = '#f0fdf4';
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#d1d5db';
+      uploadArea.style.background = '#f8fafc';
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#d1d5db';
+      uploadArea.style.background = '#f8fafc';
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].type.startsWith('image/')) {
+        fileInput.files = files;
+        uploadLabel.textContent = files[0].name;
+        uploadArea.style.borderColor = 'var(--primary)';
+        uploadArea.style.background = '#f0fdf4';
       }
     });
   }

@@ -1,55 +1,58 @@
 <!-- Classification Results Component -->
 {% if prediction %}
 <div id="result" class="row">
-  <div class="col-md-12">
-    <div class="card shadow-sm border-0">
-      <div class="card-body">
-        <h4 class="mb-4 text-center text-success">{{ texts.result_title }} <strong>{{ get_plastic_type_name(session, prediction) }}</strong></h4>
-        <div class="row">
-          <!-- Uploaded Image -->
-          <div class="col-md-6 text-center mb-3 mb-md-0">
-            <p class="fw-bold">{{ texts.uploaded_image }}</p>
-            <img src="{{ url_for('static', filename=image_url) }}" 
-                 class="img-fluid rounded border"
-                 style="max-width: 300px; max-height: 300px; object-fit: contain;">
-          </div>
-
-          <!-- Probability Bar Chart -->
-          <div class="col-md-6 text-start">
-             <br>
-            {% for label, value in probs.items() %}
-            <div class="mb-2 d-flex align-items-center">
-              <div class="category-label">{{ get_plastic_type_name(session, label) }}</div>
-              <div class="flex-grow-1 me-2">
-                <div class="progress" style="height: 24px;">
-                  <div class="progress-bar animated-bar {% if loop.index == 1 %}progress-bar-top{% endif %}" 
-                       role="progressbar"
-                       data-width="{{ '%.2f'|format(value) }}"
-                       style="width: 0%;">
-                    {% if value >= 5 %}{{ '%.1f'|format(value) }}%{% endif %}
-                  </div>
-                </div>
-              </div>
-              {% if value < 5 %}
-                <span class="small text-muted">{{ '%.1f'|format(value) }}%</span>
-              {% endif %}
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <!-- Report Button -->
-        <div class="text-center mt-4">
-          <form method="POST" action="/report">
-            <input type="hidden" name="prediction" value="{{ prediction }}">
-            <input type="hidden" name="image_url" value="{{ image_url }}">
-            <button type="submit" class="btn btn-outline-danger">
-              <i class="bi bi-flag-fill"></i> {{ texts.report_btn }}
-            </button>
-          </form>
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body text-center">
+        <h6 class="mb-3">{{ texts.uploaded_image if texts.uploaded_image else 'Gambar yang diunggah' }}</h6>
+        <div class="d-flex justify-content-center">
+          <img src="{{ url_for('static', filename=image_url) }}" 
+               class="img-fluid rounded border"
+               style="max-width: 100%; max-height: 200px; object-fit: contain;">
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="col-md-8 mb-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h5 class="mb-3 text-center text-success">{{ texts.result_title if texts.result_title else 'Hasil prediksi' }}: <strong>{{ get_plastic_type_name(session, prediction) }}</strong></h5>
+        <h6 class="mb-3">{{ texts.confidence_percentage if texts.confidence_percentage else 'Persentase kemiripan' }}:</h6>
+        
+        {% for label, value in probs.items() %}
+        <div class="mb-1 d-flex align-items-center" style="min-height: 24px;">
+          <div class="category-label">{{ get_plastic_type_name(session, label) }}</div>
+          <div class="flex-grow-1">
+            <div class="progress" style="height: 20px;">
+              <div class="progress-bar animated-bar {% if loop.index == 1 %}progress-bar-top{% endif %}" 
+                   role="progressbar"
+                   data-width="{{ '%.2f'|format(value) }}"
+                   style="width: 0%;">
+                {% if value >= 5 %}{{ '%.1f'|format(value) }}%{% endif %}
+              </div>
+            </div>
+          </div>
+          {% if value < 5 %}
+            <span class="small text-muted ms-2" style="font-size: 10px; min-width: 35px;">{{ '%.1f'|format(value) }}%</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Report Button -->
+<div class="row">
+  <div class="col-12 text-center">
+    <form method="POST" action="/report">
+      <input type="hidden" name="prediction" value="{{ prediction }}">
+      <input type="hidden" name="image_url" value="{{ image_url }}">
+      <button type="submit" class="btn btn-outline-danger px-4">
+        <i class="bi bi-flag-fill"></i> {{ texts.report_btn if texts.report_btn else 'Hasil prediksi tidak sesuai? Lapor disini' }}
+      </button>
+    </form>
   </div>
 </div>
 {% endif %}
