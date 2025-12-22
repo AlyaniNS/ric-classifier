@@ -1,53 +1,70 @@
-# RIC Classification Application - Modular Structure
+# Klasifikasi Kode Resin Pada Kemasan Plastik
 
-This Flask application classifies Resin Identification Codes (RIC) on plastic packaging using few-shot learning with EfficientNet-B2.
+Aplikasi web untuk klasifikasi Resin Identification Code (RIC) pada kemasan plastik menggunakan Few-Shot Learning dengan EfficientNet-B2.
 
-## Project Structure
+## Fitur Utama
+
+- 🔍 Klasifikasi otomatis 7 jenis plastik (PET, HDPE, PVC, LDPE, PP, PS, OTHER)
+- 🌐 Dukungan bilingual (Indonesia & English)
+- 📊 Visualisasi confidence score dengan progress bar
+- 📱 Responsive design untuk mobile dan desktop
+- 🎨 Modern UI dengan animasi smooth
+
+## Teknologi
+
+- **Backend**: Flask (Python)
+- **Model**: EfficientNet-B2 dengan Few-Shot Learning
+- **Frontend**: Bootstrap 5, Custom CSS
+- **Deep Learning**: PyTorch, timm
+
+## Instalasi & Menjalankan Lokal
+
+```bash
+# Clone repository
+git clone <repository-url>
+cd skripsi
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Jalankan aplikasi
+python app.py
+```
+
+Aplikasi akan berjalan di `http://localhost:5000`
+
+## Deployment ke Render
+
+1. Push repository ke GitHub
+2. Login ke [render.com](https://render.com)
+3. Buat Web Service baru
+4. Connect repository ini
+5. Render akan otomatis detect `render.yaml` dan deploy
+
+File konfigurasi sudah tersedia di `render.yaml`.
+
+## Struktur Project
 
 ```
-app.py                          # Main Flask application (routes and app logic)
-config.py                       # Configuration settings
-localization.py                 # Localization data (Indonesian/English)
-model.py                        # ML model handling and prediction logic
-requirements.txt                # Python dependencies
-static/
-├── style.css                   # Main stylesheet with design tokens
-├── uploads/                    # Uploaded images
-└── history/                    # Upload history
-templates/
-├── index.html                  # Main template (now modular)
-└── components/                 # Reusable template components
-    ├── header.html            # Language switcher and hero section
-    ├── upload.html            # File upload form
-    ├── classification_result.html  # Prediction results display
-    ├── not_ric_result.html    # Non-RIC error handling
-    └── footer.html            # Footer with copyright
-logs/
-└── reports.txt                # User reports
+app.py              # Main application
+config.py           # Configuration settings
+localization.py     # Translations (ID/EN)
+model.py            # ML model handler
+templates/          # HTML templates
+static/             # CSS, JS, images
+models/             # ML model files
 ```
 
-## Key Features
+## Cara Penggunaan
 
-### Modular Architecture
-- **Separation of Concerns**: Each file has a specific responsibility
-- **Reusable Components**: Template components can be easily maintained
-- **Configuration Management**: Centralized settings in `config.py`
-- **Localization**: Separate file for all translations
+1. Upload gambar kode resin plastik
+2. Klik tombol "Prediksi"
+3. Lihat hasil klasifikasi dan confidence score
+4. Lapor jika hasil tidak sesuai (opsional)
 
-### Model Configuration
-- **Multiple Model Variants**: Support for 10-shot, 5-shot, and v3 models
-- **Environment Variables**: Configure model variant via `MODEL_VARIANT` env var
-- **Automatic Fallback**: Falls back to available models if preferred not found
-- **Cross-Platform**: Works on Windows, macOS, and Linux
+## License
 
-### User Interface
-- **Responsive Design**: Bootstrap 5 with custom design tokens
-- **Animated Progress Bars**: Smooth animations for prediction results
-- **Bilingual Support**: Indonesian and English languages
-- **Modern Styling**: Clean, accessible design with eco-friendly theme
-
-### Development Features
-- **Component-Based Templates**: Easy to modify individual sections
+© 2025 Dibuat oleh Alyani Septalia untuk Keperluan Skripsi
 - **Error Handling**: Graceful handling of non-RIC images
 - **Development Reports**: Report functionality for all cases
 - **Debug Mode**: Configurable debug settings
