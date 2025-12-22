@@ -106,4 +106,7 @@ def report():
 
 # --- Application entry point ---
 if __name__ == "__main__":
-    app.run(debug=DEBUG, port=PORT)
+    # For production deployment (Render, etc.)
+    port = int(os.environ.get("PORT", PORT))
+    app.run(host="0.0.0.0", port=port, debug=DEBUG)
+
