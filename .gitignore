@@ -1,5 +1,6 @@
 # Ignore virtual environments
 venv/
+venv_local/
 .env/
 .envrc
 *.pyc
@@ -19,4 +20,8 @@ __pycache__/
 # Ignore system files
 .DS_Store
 Thumbs.db
-venv/
+
+# Ignore uploaded files (but keep dummy samples)
+static/uploads/*
+!static/uploads/.gitkeep
+!static/dummy/
