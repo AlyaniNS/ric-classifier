@@ -56,7 +56,8 @@ def index():
             if dummy_name:
                 from time import time as _time
                 import shutil
-                src_path = os.path.join(get_base_dir(), "data", os.path.basename(dummy_name))
+                # Use static/dummy/ folder for dummy images
+                src_path = os.path.join(get_base_dir(), "static", "dummy", os.path.basename(dummy_name))
                 unique_filename = f"{int(_time())}_{os.path.basename(dummy_name)}"
                 file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
                 shutil.copy(src_path, file_path)

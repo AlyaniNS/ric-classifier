@@ -26,7 +26,10 @@ LANGUAGES = {
         'not_ric_title': 'Bukan Kode Resin!',
         'processing': 'Memproses...',
         'debug_info': 'Info Debug: Confidence: {:.1f}%, Gap: {:.1f}%, Flags: {}',
-        'footer': '© 2025 Dibuat oleh <a href="https://alyanins.tech" target="_blank" rel="noopener noreferrer">Alyani Septalia</a> untuk Keperluan Skripsi'
+        'footer': '© 2025 Dibuat oleh <a href="https://alyanins.tech" target="_blank" rel="noopener noreferrer">Alyani Septalia</a> untuk Keperluan Skripsi',
+        'change_image': 'Ganti gambar',
+        'or_try_sample': 'Atau coba salah satu gambar ini:',
+        'sample_label': 'Contoh {}'
     },
     'en': {
         'title': 'Resin Identification Code Classification on Plastic Packaging',
@@ -49,7 +52,10 @@ LANGUAGES = {
         'not_ric_title': 'Not a Resin Code!',
         'processing': 'Processing...',
         'debug_info': 'Debug Info: Confidence: {:.1f}%, Gap: {:.1f}%, Flags: {}',
-        'footer': '© 2025 Made by <a href="https://alyanins.tech" target="_blank" rel="noopener noreferrer">Alyani Septalia</a> for Undergraduate Thesis Purposes'
+        'footer': '© 2025 Made by <a href="https://alyanins.tech" target="_blank" rel="noopener noreferrer">Alyani Septalia</a> for Undergraduate Thesis Purposes',
+        'change_image': 'Change image',
+        'or_try_sample': 'Or try one of these:',
+        'sample_label': 'Sample {}'
     }
 }
 

@@ -4,7 +4,7 @@
   <div class="col-md-4 mb-4">
     <div class="card shadow-sm border-0 h-100">
       <div class="card-body text-center">
-        <h6 class="mb-3">{{ texts.uploaded_image if texts.uploaded_image else 'Gambar yang diunggah' }}</h6>
+        <h6 class="mb-3">{{ texts.uploaded_image }}</h6>
         <div class="d-flex justify-content-center">
           <img src="{{ url_for('static', filename=image_url) }}" 
                class="img-fluid rounded border"
@@ -17,8 +17,8 @@
   <div class="col-md-8 mb-4">
     <div class="card shadow-sm border-0 h-100">
       <div class="card-body">
-        <h5 class="mb-3 text-center text-success">{{ texts.result_title if texts.result_title else 'Hasil prediksi' }}: <strong>{{ get_plastic_type_name(session, prediction) }}</strong></h5>
-        <h6 class="mb-3">{{ texts.confidence_percentage if texts.confidence_percentage else 'Persentase kemiripan' }}:</h6>
+        <h5 class="mb-3 text-center text-success">{{ texts.result_title }}: <strong>{{ get_plastic_type_name(session, prediction) }}</strong></h5>
+        <h6 class="mb-3">{{ texts.confidence_percentage }}:</h6>
         
         {% for label, value in probs.items() %}
         <div class="mb-1 d-flex align-items-center" style="min-height: 24px;">
@@ -50,7 +50,7 @@
       <input type="hidden" name="prediction" value="{{ prediction }}">
       <input type="hidden" name="image_url" value="{{ image_url }}">
       <button type="submit" class="btn btn-outline-danger px-4">
-        <i class="bi bi-flag-fill"></i> {{ texts.report_btn if texts.report_btn else 'Hasil prediksi tidak sesuai? Lapor disini' }}
+        <i class="bi bi-flag-fill"></i> {{ texts.report_btn }}
       </button>
     </form>
   </div>

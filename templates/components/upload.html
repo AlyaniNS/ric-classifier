@@ -2,49 +2,107 @@
 <div class="row mb-4">
   <div class="col-md-8 offset-md-2">
     <div class="card shadow-sm border-0">
-      <div class="card-body text-center">
+      <div class="card-body">
         {% if error and not is_not_ric %}
-          <div class="alert alert-danger text-center">
+          <div class="alert alert-danger text-center mb-3">
             {{ error }}
           </div>
         {% endif %}
-        <form method="POST" enctype="multipart/form-data">
-          <h5 class="mb-4">{{ texts.upload_label }}</h5>
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+          <h5 class="mb-3 text-center">{{ texts.upload_label }}</h5>
           
-          <div class="upload-area mb-4">
-            <label for="fileInput" class="upload-label">
-              <i class="bi bi-cloud-upload-fill mb-2" style="font-size: 2rem; color: #6c757d;"></i>
-              <p class="mb-1">{{ texts.choose_file if texts.choose_file else 'Pilih Gambar' }}</p>
-              <p class="text-muted small mb-0">{{ texts.no_file_selected if texts.no_file_selected else 'Belum ada gambar terunggah' }}</p>
-            </label>
-            <input type="file" name="file" id="fileInput" class="form-control d-none" accept="image/*" required>
+          <!-- Preview Area -->
+          <div id="previewArea" class="mb-3" style="display: none;">
+            <div class="text-center">
+              <img id="imagePreview" src="" alt="Preview" class="img-fluid rounded" style="max-height: 250px; object-fit: contain;">
+            </div>
+            <div class="d-flex gap-2 justify-content-center mt-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearPreview()">
+                <i class="bi bi-x-circle"></i> {{ texts.change_image }}
+              </button>
+              <button type="submit" class="btn btn-sm btn-success px-4" id="predictBtnPreview">
+                <i class="bi bi-magic"></i> {{ texts.predict_btn }}
+              </button>
+            </div>
           </div>
           
-          <button type="submit" class="btn btn-success px-5 py-2">
-            <i class="bi bi-magic"></i> {{ texts.predict_btn }}
-          </button>
+          <!-- Upload Area (hidden when preview shown) -->
+          <div id="uploadArea">
+            <div class="upload-area mb-3" style="padding: 1.5rem;">
+              <label for="fileInput" class="upload-label mb-0">
+                <i class="bi bi-cloud-upload-fill mb-1" style="font-size: 1.75rem; color: #6c757d;"></i>
+                <p class="mb-0 fw-medium">{{ texts.choose_file }}</p>
+                <p class="text-muted small mb-0" style="font-size: 0.85rem;">{{ texts.no_file_selected }}</p>
+              </label>
+              <input type="file" name="file" id="fileInput" class="form-control d-none" accept="image/*" onchange="previewImage(event)">
+            </div>
+            
+            <!-- Sample Images Section - More Compact -->
+            <div class="text-center">
+              <p class="text-muted mb-2 small">
+                {{ texts.or_try_sample }}
+              </p>
+              <div class="d-flex gap-2 justify-content-center">
+                <button type="button" class="btn p-0 border-0 bg-transparent" onclick="loadDummy('dummy-1.png')" aria-label="{{ texts.sample_label.format('1') }}" title="{{ texts.sample_label.format('1') }}">
+                  <img src="{{ url_for('static', filename='dummy/dummy-1.png') }}" class="rounded-circle border" style="width:50px;height:50px;object-fit:cover;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" />
+                </button>
+                <button type="button" class="btn p-0 border-0 bg-transparent" onclick="loadDummy('dummy-2.png')" aria-label="{{ texts.sample_label.format('2') }}" title="{{ texts.sample_label.format('2') }}">
+                  <img src="{{ url_for('static', filename='dummy/dummy-2.png') }}" class="rounded-circle border" style="width:50px;height:50px;object-fit:cover;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" />
+                </button>
+                <button type="button" class="btn p-0 border-0 bg-transparent" onclick="loadDummy('dummy-3.png')" aria-label="{{ texts.sample_label.format('3') }}" title="{{ texts.sample_label.format('3') }}">
+                  <img src="{{ url_for('static', filename='dummy/dummy-3.png') }}" class="rounded-circle border" style="width:50px;height:50px;object-fit:cover;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" />
+                </button>
+              </div>
+            </div>
+          </div>
         </form>
-
-        <div class="mt-4 text-start">
-          <div class="text-muted mb-2">
-            {% if current_lang == 'en' %}No image? Try one of these:{% else %}Tidak ada gambar? Coba salah satu ini:{% endif %}
-          </div>
-          <div class="d-flex gap-3">
-            <form method="POST">
-              <input type="hidden" name="dummy" value="ric_1_pet.png">
-              <button type="submit" class="btn p-0 border-0 bg-transparent" aria-label="Use sample PET">
-                <img src="{{ url_for('dummy', name='dummy-1.png') }}" class="rounded-circle border" style="width:64px;height:64px;object-fit:cover;" />
-              </button>
-            </form>
-            <form method="POST">
-              <input type="hidden" name="dummy" value="ric_5_pp.png">
-              <button type="submit" class="btn p-0 border-0 bg-transparent" aria-label="Use sample PP">
-                <img src="{{ url_for('dummy', name='dummy-2.png') }}" class="rounded-circle border" style="width:64px;height:64px;object-fit:cover;" />
-              </button>
-            </form>
-          </div>
-        </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+// Preview uploaded image
+function previewImage(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('imagePreview').src = e.target.result;
+      document.getElementById('previewArea').style.display = 'block';
+      document.getElementById('uploadArea').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// Clear preview and reset form
+function clearPreview() {
+  document.getElementById('imagePreview').src = '';
+  document.getElementById('previewArea').style.display = 'none';
+  document.getElementById('uploadArea').style.display = 'block';
+  document.getElementById('fileInput').value = '';
+}
+
+// Load dummy sample image
+function loadDummy(filename) {
+  // Create a hidden input for the dummy parameter
+  const form = document.getElementById('uploadForm');
+  
+  // Remove any existing dummy input
+  const existingDummy = form.querySelector('input[name="dummy"]');
+  if (existingDummy) {
+    existingDummy.remove();
+  }
+  
+  // Add the dummy parameter as a hidden input
+  const dummyInput = document.createElement('input');
+  dummyInput.type = 'hidden';
+  dummyInput.name = 'dummy';
+  dummyInput.value = filename;
+  form.appendChild(dummyInput);
+  
+  // Submit the form normally (this will show results)
+  form.submit();
+}
+</script>
