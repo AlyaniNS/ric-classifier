@@ -72,6 +72,9 @@ def index():
                 # Model will always return a prediction
                     
             except Exception as e:
+                import traceback
+                traceback.print_exc()
+                print(f"Error processing request: {e}")
                 error = get_text(session, 'processing_error', str(e))
 
     # Get current language and texts

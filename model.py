@@ -182,15 +182,19 @@ class RICClassifier:
     
     def _create_chart(self, class_sorted, sims_sorted, pred_class):
         """Create visualization chart for predictions."""
+        # Convert to pure Python types to avoid matplotlib strictness/numpy mismatch
+        class_sorted = [str(c) for c in class_sorted]
+        sims_sorted = [float(s) for s in sims_sorted]
+        
         fig, ax = plt.subplots(figsize=(8, 5))
-        y = np.arange(len(class_sorted))
-        bars = ax.barh(y, sims_sorted, color='skyblue')
+        y = range(len(class_sorted))
+        bars = ax.barh(list(y), sims_sorted, color='skyblue')
         bars[0].set_color('orange')
         
         for i, v in enumerate(sims_sorted):
             ax.text(v + 1, i, f"{v:.1f}%", va='center', fontsize=10)
         
-        ax.set_yticks(y)
+        ax.set_yticks(list(y))
         ax.set_yticklabels(class_sorted)
         ax.set_xlabel("Similarity (%)")
         ax.set_title(f"Prediction: {pred_class} ({sims_sorted[0]:.2f}%)")
