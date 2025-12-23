@@ -33,10 +33,16 @@ class RICClassifier:
         self._load_model()
     
     def _create_transform(self):
-        """Create image preprocessing transform."""
+        """Create image preprocessing transform without torchvision's ToTensor.
+        Avoids numpy type strictness issues by converting via torch.tensor.
+        """
+        def to_tensor_safe(img):
+            arr = np.array(img, dtype=np.uint8)
+            tensor = torch.tensor(arr, dtype=torch.float32).permute(2, 0, 1) / 255.0
+            return tensor
         return transforms.Compose([
             transforms.Resize(IMAGE_SIZE),
-            transforms.ToTensor(),
+            transforms.Lambda(to_tensor_safe),
             transforms.Normalize(NORMALIZE_MEAN, NORMALIZE_STD)
         ])
     
@@ -216,4 +222,3 @@ class RICClassifier:
     def get_chart(self):
         """Get the generated chart image."""
         return self.chart_image
-
