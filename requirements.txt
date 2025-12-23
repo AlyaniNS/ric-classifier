@@ -1,7 +1,9 @@
-flask
-torch
-torchvision
-pillow
-timm
-matplotlib
-chartjs
+Flask==3.1.2
+torch==2.1.0
+torchvision==0.16.0
+Pillow==10.1.0
+timm==0.9.12
+matplotlib==3.8.2
+chartjs==1.2
+gunicorn==21.2.0
+Werkzeug==3.1.2
