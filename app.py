@@ -6,7 +6,7 @@ import os
 from flask import Flask, render_template, request, send_file, redirect, url_for, session
 
 # Import our modular components
-from config import SECRET_KEY, DEBUG, PORT, UPLOAD_FOLDER, LOG_DIR, REPORTS_FILE
+from config import SECRET_KEY, DEBUG, PORT, UPLOAD_FOLDER, LOG_DIR, REPORTS_FILE, get_base_dir
 from localization import LANGUAGES, get_language, get_text, get_plastic_type_name
 from model import RICClassifier
 
@@ -48,31 +48,35 @@ def index():
     is_not_ric = False
 
     if request.method == "POST":
+        # Support dummy sample selection without requiring a file upload
+        dummy_name = request.form.get("dummy")
         file = request.files.get("file")
-        if not file or file.filename == "":
-            error = get_text(session, 'no_file_error')
-        else:
-            try:
-                ensure_upload_dir()
-                
-                # Create unique filename to prevent caching issues
+        try:
+            ensure_upload_dir()
+            if dummy_name:
+                from time import time as _time
+                import shutil
+                src_path = os.path.join(get_base_dir(), "data", os.path.basename(dummy_name))
+                unique_filename = f"{int(_time())}_{os.path.basename(dummy_name)}"
+                file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                shutil.copy(src_path, file_path)
+                image_url = f"uploads/{unique_filename}"
+                prediction, probs, confidence = classifier.predict(file_path)
+            elif file and file.filename != "":
                 import time
                 timestamp = str(int(time.time()))
-                file_extension = os.path.splitext(file.filename)[1]
                 unique_filename = f"{timestamp}_{file.filename}"
                 file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-                
                 file.save(file_path)
                 image_url = f"uploads/{unique_filename}"
-
-                # Get prediction from TorchScript model
                 prediction, probs, confidence = classifier.predict(file_path)
-                
-                # Always show prediction (no exception handling)
-                # Model will always return a prediction
-                    
-            except Exception as e:
-                error = get_text(session, 'processing_error', str(e))
+            else:
+                error = get_text(session, 'no_file_error')
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print(f"Error processing request: {e}")
+            error = get_text(session, 'processing_error', str(e))
 
     # Get current language and texts
     current_lang = get_language(session)
@@ -90,6 +94,15 @@ def chart():
     if chart_image:
         return send_file(chart_image, mimetype="image/png")
     return "No chart available", 404
+
+@app.route("/dummy/<name>")
+def dummy(name):
+    base = get_base_dir()
+    safe_name = os.path.basename(name)
+    path = os.path.join(base, "data", safe_name)
+    if os.path.exists(path):
+        return send_file(path, mimetype="image/png")
+    return "Not found", 404
 
 @app.route("/report", methods=["POST"])
 def report():
