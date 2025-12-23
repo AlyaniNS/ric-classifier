@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 
 # Install Python packages to /install directory
-# Install numpy first to ensure compatibility
-RUN pip install --no-cache-dir --prefix=/install numpy==1.24.3 && \
+# Install numpy first to ensure compatibility - using older stable version for torchvision compat
+RUN pip install --no-cache-dir --prefix=/install numpy==1.23.5 && \
     pip install --no-cache-dir --prefix=/install \
     torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir --prefix=/install \
