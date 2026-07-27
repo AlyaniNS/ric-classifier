@@ -324,7 +324,8 @@ if st.session_state.active_image is not None:
     if isinstance(src, str):
         img_data = b64(src)
     else:
-        raw = src.read(); src.seek(0)
+        src.seek(0)
+        raw = src.read()
         img_data = base64.b64encode(raw).decode()
 
     st.markdown("---")
